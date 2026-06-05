@@ -11,7 +11,7 @@ bucket_name = "listings-media"
 #   wrangler pages secret put GITHUB_TOKEN
 [vars]
 ENVIRONMENT = "production"
-GITHUB_REPO = "owner/repo"
+GITHUB_REPO = "dsottimano/astro-vue-cf-starter"
 GITHUB_BRANCH = "main"
 CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
 CF_ACCESS_AUD = "replace-with-access-application-aud"

@@ -16,4 +16,10 @@ export interface Env {
 
   // R2 bucket binding for uploaded media
   MEDIA: R2Bucket;
+
+  // Telegram bot
+  TELEGRAM_BOT_TOKEN: string; // secret — from BotFather
+  TELEGRAM_WEBHOOK_SECRET: string; // secret — setWebhook secret_token
+  TELEGRAM_ALLOWED_IDS: string; // comma-separated numeric Telegram user IDs
+  SESSIONS: KVNamespace; // wizard session state
 }

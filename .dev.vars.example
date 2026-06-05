@@ -6,3 +6,9 @@ GITHUB_REPO=owner/repo
 GITHUB_BRANCH=main
 CF_ACCESS_TEAM_DOMAIN=yourteam.cloudflareaccess.com
 CF_ACCESS_AUD=replace-with-access-application-aud
+
+# Telegram bot (local dev). For local testing the webhook needs a public
+# tunnel (cloudflared/ngrok) pointed at `wrangler pages dev`.
+TELEGRAM_BOT_TOKEN=123456:your-botfather-token
+TELEGRAM_WEBHOOK_SECRET=your-random-webhook-secret
+TELEGRAM_ALLOWED_IDS=123456789

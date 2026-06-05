@@ -15,3 +15,11 @@ GITHUB_REPO = "dsottimano/astro-vue-cf-starter"
 GITHUB_BRANCH = "main"
 CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
 CF_ACCESS_AUD = "replace-with-access-application-aud"
+# Comma-separated numeric Telegram user IDs allowed to drive the bot.
+TELEGRAM_ALLOWED_IDS = "123456789"
+
+# KV namespace for Telegram wizard session state.
+# Create with: wrangler kv namespace create SESSIONS
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

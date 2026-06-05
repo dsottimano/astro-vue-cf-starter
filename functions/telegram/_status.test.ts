@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { withStatus } from './_status';
+import { withStatus, pathForSlug, isStatusCallback } from './_status';
 
 describe('withStatus', () => {
   it('replaces the status frontmatter field, preserving the body', () => {
@@ -8,5 +8,19 @@ describe('withStatus', () => {
     expect(out).toContain('status: sold');
     expect(out).not.toContain('status: draft');
     expect(out).toContain('Body text.');
+  });
+});
+
+describe('pathForSlug', () => {
+  it('builds the en listings path from a slug', () => {
+    expect(pathForSlug('sunny-villa')).toBe('src/content/listings/en/sunny-villa.md');
+  });
+});
+
+describe('isStatusCallback', () => {
+  it('matches pick: and set: prefixes only', () => {
+    expect(isStatusCallback('pick:x')).toBe(true);
+    expect(isStatusCallback('set:sold:x')).toBe(true);
+    expect(isStatusCallback('loc:en')).toBe(false);
   });
 });

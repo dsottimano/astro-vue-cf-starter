@@ -1,6 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 import type { Env } from '../api/_env';
-import { listDir, readFile, commitFile, type DirEntry } from '../api/_github';
+import { listDir, readFile, commitFile, isUnsafePath, type DirEntry } from '../api/_github';
 import { parseEntry, serializeEntry } from '../../src/admin/frontmatter';
 import { sendMessage, answerCallback, inlineKeyboard } from './_telegram';
 
@@ -11,6 +11,11 @@ const DEFAULT_LOCALE = 'en';
 export function withStatus(raw: string, status: string): string {
   const { data, body } = parseEntry(raw);
   return serializeEntry({ ...data, status }, body);
+}
+
+// Pure: reconstruct the fixed listing path from a slug.
+export function pathForSlug(slug: string): string {
+  return `src/content/listings/${DEFAULT_LOCALE}/${slug}.md`;
 }
 
 // /status → list recent listings as buttons.
@@ -26,11 +31,16 @@ export async function listForStatus(env: Env, chatId: number): Promise<void> {
     await sendMessage(env, chatId, 'No listings yet.');
     return;
   }
-  const rows = files.slice(0, 20).map((f) => [[f.name.replace(/\.md$/, ''), `pick:${f.path}`]] as [string, string][]);
+  const rows = files
+    .slice(0, 20)
+    .map((f) => {
+      const slug = f.name.replace(/\.md$/, '');
+      return [[slug, `pick:${slug}`]] as [string, string][];
+    });
   await sendMessage(env, chatId, 'Which listing?', inlineKeyboard(rows));
 }
 
-// Route a status-flow callback (pick:... / set:status:path).
+// Route a status-flow callback (pick:slug / set:status:slug).
 export async function handleStatusCallback(
   env: Env,
   chatId: number,
@@ -40,8 +50,8 @@ export async function handleStatusCallback(
   await answerCallback(env, callbackId);
 
   if (data.startsWith('pick:')) {
-    const path = data.slice('pick:'.length);
-    const rows = STATUSES.map((s) => [[s, `set:${s}:${path}`]] as [string, string][]);
+    const slug = data.slice('pick:'.length);
+    const rows = STATUSES.map((s) => [[s, `set:${s}:${slug}`]] as [string, string][]);
     await sendMessage(env, chatId, 'New status?', inlineKeyboard(rows));
     return;
   }
@@ -50,7 +60,12 @@ export async function handleStatusCallback(
     const rest = data.slice('set:'.length);
     const sep = rest.indexOf(':');
     const status = rest.slice(0, sep);
-    const path = rest.slice(sep + 1);
+    const slug = rest.slice(sep + 1);
+    const path = pathForSlug(slug);
+    if (isUnsafePath(path)) {
+      await sendMessage(env, chatId, 'Invalid listing.');
+      return;
+    }
     try {
       const file = await readFile(env, path);
       if (!file) {

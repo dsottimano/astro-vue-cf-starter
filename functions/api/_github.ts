@@ -48,3 +48,55 @@ export async function getSha(env: Env, path: string): Promise<string | undefined
   if (res.status === 404) return undefined;
   throw new Error(`github read failed (${res.status})`);
 }
+
+// Commit (create or update) a text file; returns the new commit sha.
+export async function commitFile(
+  env: Env,
+  path: string,
+  content: string,
+  message: string,
+): Promise<string> {
+  const sha = await getSha(env, path);
+  const put = await fetch(contentsUrl(env, path), {
+    method: 'PUT',
+    headers: ghHeaders(env.GITHUB_TOKEN),
+    body: JSON.stringify({ message, content: toBase64(content), branch: env.GITHUB_BRANCH, sha }),
+  });
+  if (!put.ok) throw new Error(`github commit failed (${put.status})`);
+  const result = (await put.json()) as { commit: { sha: string } };
+  return result.commit.sha;
+}
+
+// Read a file's decoded content + sha, or null if it doesn't exist.
+export async function readFile(
+  env: Env,
+  path: string,
+): Promise<{ content: string; sha: string } | null> {
+  const res = await fetch(`${contentsUrl(env, path)}?ref=${env.GITHUB_BRANCH}`, {
+    headers: ghHeaders(env.GITHUB_TOKEN),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`github read failed (${res.status})`);
+  const data = (await res.json()) as { content: string; sha: string };
+  return { content: fromBase64(data.content), sha: data.sha };
+}
+
+export interface DirEntry {
+  name: string;
+  path: string;
+  sha: string;
+}
+
+// List files (not subdirectories) in a content directory; [] if missing.
+export async function listDir(env: Env, dir: string): Promise<DirEntry[]> {
+  const res = await fetch(`${contentsUrl(env, dir)}?ref=${env.GITHUB_BRANCH}`, {
+    headers: ghHeaders(env.GITHUB_TOKEN),
+  });
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`github list failed (${res.status})`);
+  const data = (await res.json()) as
+    | Array<{ name: string; path: string; sha: string; type: string }>
+    | { name: string; path: string; sha: string; type: string };
+  const arr = Array.isArray(data) ? data : [data];
+  return arr.filter((e) => e.type === 'file').map((e) => ({ name: e.name, path: e.path, sha: e.sha }));
+}

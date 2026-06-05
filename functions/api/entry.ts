@@ -1,6 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 import type { Env } from './_env';
-import { contentsUrl, ghHeaders, fromBase64, getSha, isUnsafePath } from './_github';
+import { contentsUrl, ghHeaders, getSha, isUnsafePath, readFile } from './_github';
 
 // GET    /api/entry?path=...  → read one file { content, sha }
 // DELETE /api/entry?path=...  → remove one file (commits a deletion)
@@ -14,14 +14,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const path = pathParam(request);
   if (!path) return Response.json({ error: 'invalid path' }, { status: 400 });
 
-  const res = await fetch(`${contentsUrl(env, path)}?ref=${env.GITHUB_BRANCH}`, {
-    headers: ghHeaders(env.GITHUB_TOKEN),
-  });
-  if (res.status === 404) return Response.json({ error: 'not found' }, { status: 404 });
-  if (!res.ok) return Response.json({ error: 'github read failed' }, { status: 502 });
-
-  const data = (await res.json()) as { content: string; sha: string };
-  return Response.json({ content: fromBase64(data.content), sha: data.sha });
+  let file: { content: string; sha: string } | null;
+  try {
+    file = await readFile(env, path);
+  } catch {
+    return Response.json({ error: 'github read failed' }, { status: 502 });
+  }
+  if (!file) return Response.json({ error: 'not found' }, { status: 404 });
+  return Response.json({ content: file.content, sha: file.sha });
 };
 
 export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {

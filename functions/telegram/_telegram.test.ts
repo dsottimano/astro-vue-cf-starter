@@ -22,6 +22,7 @@ describe('keyboard builders', () => {
   it('locationKeyboard requests location and is one-time', () => {
     const kb = locationKeyboard();
     expect(kb.keyboard[0][0].request_location).toBe(true);
+    expect(kb.resize_keyboard).toBe(true);
     expect(kb.one_time_keyboard).toBe(true);
   });
 });

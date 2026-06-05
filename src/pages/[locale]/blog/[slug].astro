@@ -1,0 +1,110 @@
+---
+import { render } from 'astro:content';
+import { siteConfig, type Locale } from '../../../../config/site.config';
+import { getPosts } from '../../../lib/posts';
+import { getCategories, categoryName } from '../../../lib/categories';
+import { useTranslations } from '../../../i18n';
+import { imageUrl } from '../../../lib/media';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of siteConfig.locales) {
+    for (const post of await getPosts(locale)) {
+      paths.push({ params: { locale, slug: post.data.slug }, props: { post } });
+    }
+  }
+  return paths;
+}
+
+const { post } = Astro.props;
+const locale = Astro.params.locale as Locale;
+const t = useTranslations(locale);
+const { Content } = await render(post);
+const d = post.data;
+
+const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'long' });
+const allCats = await getCategories();
+const cats = d.categories
+  .map((slug) => allCats.find((c) => c.data.slug === slug))
+  .filter((c) => c !== undefined);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: d.title,
+  datePublished: d.publishDate.toISOString(),
+  url: new URL(`/${locale}/blog/${d.slug}`, siteConfig.url).href,
+  ...(d.coverImage ? { image: imageUrl(d.coverImage) } : {}),
+  ...(d.excerpt ? { description: d.excerpt } : {}),
+};
+---
+
+<BaseLayout
+  title={`${d.title} — ${siteConfig.name}`}
+  description={d.excerpt}
+  locale={locale}
+  image={d.coverImage ? imageUrl(d.coverImage) : undefined}
+  jsonLd={jsonLd}
+>
+  <main class="wrap">
+    <a class="back" href={`/${locale}/blog`}>← {t('blog.backToBlog')}</a>
+    <article>
+      <p class="date">{t('blog.publishedOn')} {fmt.format(d.publishDate)}</p>
+      <h1>{d.title}</h1>
+
+      {d.coverImage && <img class="cover" src={imageUrl(d.coverImage)} alt={d.title} />}
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        cats.length > 0 && (
+          <footer class="cats">
+            <span>{t('blog.categories')}:</span>
+            {cats.map((c) => (
+              <a href={`/${locale}/blog/category/${c.data.slug}`}>{categoryName(c, locale)}</a>
+            ))}
+          </footer>
+        )
+      }
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 2rem var(--space);
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+  }
+  .date {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin: 0 0 0.25rem;
+  }
+  .cover {
+    width: 100%;
+    border-radius: var(--radius);
+    margin: 1rem 0;
+  }
+  .cats {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+  .cats span {
+    color: var(--color-muted);
+  }
+</style>

@@ -1,0 +1,9 @@
+{
+  "extends": ["html-validate:recommended"],
+  "elements": ["html5", { "style": { "flow": true } }],
+  "rules": {
+    "no-trailing-whitespace": "off",
+    "svg-focusable": "off",
+    "long-title": "warn"
+  }
+}

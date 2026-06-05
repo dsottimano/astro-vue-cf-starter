@@ -1,0 +1,120 @@
+---
+import { siteConfig, type Locale } from '../../../config/site.config';
+import { getListings, imageUrl } from '../../lib/listings';
+import { useTranslations } from '../../i18n';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return siteConfig.locales.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const t = useTranslations(locale);
+const listings = await getListings(locale);
+
+const money = (price: number, currency: string) =>
+  new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0,
+  }).format(price);
+---
+
+<BaseLayout title={siteConfig.name} description={t('site.tagline')} locale={locale}>
+  <main class="wrap">
+    <header class="page-head">
+      <h1>{siteConfig.name}</h1>
+      <p class="muted">{t('site.tagline')}</p>
+    </header>
+
+    <ul class="grid">
+      {
+        listings.map((entry) => (
+          <li class="card">
+            <a href={`/${locale}/listings/${entry.data.slug}`}>
+              <div class="thumb">
+                {entry.data.photos[0] ? (
+                  <img src={imageUrl(entry.data.photos[0])} alt={entry.data.title} />
+                ) : (
+                  <div class="thumb-empty" aria-hidden="true" />
+                )}
+                {entry.data.featured && <span class="badge">{t('listing.featured')}</span>}
+              </div>
+              <div class="card-body">
+                <h2>{entry.data.title}</h2>
+                <p class="price">{money(entry.data.price, entry.data.currency)}</p>
+                <p class="muted">
+                  {entry.data.address.city}, {entry.data.address.region}
+                </p>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 2rem var(--space);
+  }
+  .page-head h1 {
+    margin-bottom: 0.25rem;
+  }
+  .muted {
+    color: var(--color-muted);
+  }
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  .card a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--color-card);
+  }
+  .thumb {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    background: var(--color-border);
+  }
+  .thumb img,
+  .thumb-empty {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .badge {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+  }
+  .card-body {
+    padding: 1rem;
+  }
+  .card-body h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.25rem;
+  }
+  .price {
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+  }
+</style>

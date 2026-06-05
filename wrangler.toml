@@ -1,0 +1,17 @@
+name = "astro-vue-cf-starter"
+compatibility_date = "2026-06-01"
+pages_build_output_dir = "dist"
+
+# R2 bucket for uploaded media (the MEDIA binding used by /api/upload).
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "listings-media"
+
+# Non-secret vars. GITHUB_TOKEN is set separately as a secret:
+#   wrangler pages secret put GITHUB_TOKEN
+[vars]
+ENVIRONMENT = "production"
+GITHUB_REPO = "owner/repo"
+GITHUB_BRANCH = "main"
+CF_ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
+CF_ACCESS_AUD = "replace-with-access-application-aud"

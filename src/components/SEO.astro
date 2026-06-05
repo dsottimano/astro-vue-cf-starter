@@ -1,0 +1,32 @@
+---
+import { siteConfig } from '../../config/site.config';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  /** Any schema.org object — serialized into a JSON-LD <script>. */
+  jsonLd?: Record<string, unknown>;
+}
+
+const { title, description, image, jsonLd } = Astro.props;
+const canonical = new URL(Astro.url.pathname, siteConfig.url).href;
+const ogImage = image ? new URL(image, siteConfig.url).href : undefined;
+---
+
+<link rel="canonical" href={canonical} />
+{description && <meta name="description" content={description} />}
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={siteConfig.name} />
+{description && <meta property="og:description" content={description} />}
+{ogImage && <meta property="og:image" content={ogImage} />}
+
+<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:title" content={title} />
+{description && <meta name="twitter:description" content={description} />}
+{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+{jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}

@@ -1,0 +1,19 @@
+---
+// /admin — gated by Cloudflare Access in production. Client-only Vue island;
+// the admin never renders at build time (it talks to runtime Functions).
+import AdminApp from '../../admin/AdminApp.vue';
+import '../../styles/theme.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Admin — Listing editor</title>
+  </head>
+  <body>
+    <AdminApp client:only="vue" />
+  </body>
+</html>

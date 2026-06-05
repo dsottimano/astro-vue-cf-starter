@@ -1,0 +1,23 @@
+{
+  "site.tagline": "Encuentra tu lugar.",
+  "nav.listings": "Propiedades",
+  "nav.blog": "Blog",
+  "blog.title": "Blog",
+  "blog.readMore": "Leer más",
+  "blog.publishedOn": "Publicado",
+  "blog.categories": "Categorías",
+  "blog.inCategory": "Entradas en",
+  "blog.backToBlog": "Volver al blog",
+  "listing.featured": "Destacado",
+  "listing.beds": "Habitaciones",
+  "listing.baths": "Baños",
+  "listing.area": "Superficie",
+  "listing.lotSize": "Tamaño del lote",
+  "listing.features": "Características",
+  "listing.viewDetails": "Ver detalles",
+  "listing.backToList": "Volver a propiedades",
+  "status.draft": "Borrador",
+  "status.for-sale": "En venta",
+  "status.pending": "Pendiente",
+  "status.sold": "Vendido"
+}

@@ -1,0 +1,81 @@
+---
+import { siteConfig, type Locale } from '../../../../../config/site.config';
+import { getPostsByCategory } from '../../../../lib/posts';
+import { getCategories, categoryName } from '../../../../lib/categories';
+import { useTranslations } from '../../../../i18n';
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const cats = await getCategories();
+  const paths = [];
+  for (const locale of siteConfig.locales) {
+    for (const cat of cats) {
+      paths.push({ params: { locale, category: cat.data.slug }, props: { cat } });
+    }
+  }
+  return paths;
+}
+
+const { cat } = Astro.props;
+const locale = Astro.params.locale as Locale;
+const t = useTranslations(locale);
+const name = categoryName(cat, locale);
+const posts = await getPostsByCategory(locale, cat.data.slug);
+const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+---
+
+<BaseLayout title={`${name} — ${siteConfig.name}`} locale={locale}>
+  <main class="wrap">
+    <a class="back" href={`/${locale}/blog`}>← {t('blog.backToBlog')}</a>
+    <h1>{t('blog.inCategory')} {name}</h1>
+    <ul class="posts">
+      {
+        posts.map((post) => (
+          <li>
+            <p class="date">{fmt.format(post.data.publishDate)}</p>
+            <h2>
+              <a href={`/${locale}/blog/${post.data.slug}`}>{post.data.title}</a>
+            </h2>
+            {post.data.excerpt && <p class="excerpt">{post.data.excerpt}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 2rem var(--space);
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+  }
+  .posts {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: grid;
+    gap: 1.5rem;
+  }
+  .date {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin: 0 0 0.25rem;
+  }
+  .posts h2 {
+    margin: 0 0 0.5rem;
+  }
+  .posts h2 a {
+    color: var(--color-fg);
+    text-decoration: none;
+  }
+  .excerpt {
+    color: var(--color-muted);
+    margin: 0;
+  }
+</style>

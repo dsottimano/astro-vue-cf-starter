@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run lint
+      - run: npm run stylelint
+      - run: npm run format:check
+      - run: npm run test
+      - run: npm run build
+      - run: npm run validate:html
+
+  a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # axe (via pa11y-ci) against the built site — installed on demand in CI
+      # only, so it never bloats the starter's local node_modules.
+      - name: Serve and run axe
+        run: |
+          npx --yes http-server dist -p 8080 &
+          npx --yes wait-on http://localhost:8080/en/
+          npx --yes pa11y-ci

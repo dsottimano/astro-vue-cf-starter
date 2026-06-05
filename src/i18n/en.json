@@ -1,0 +1,23 @@
+{
+  "site.tagline": "Find your place.",
+  "nav.listings": "Listings",
+  "nav.blog": "Blog",
+  "blog.title": "Blog",
+  "blog.readMore": "Read more",
+  "blog.publishedOn": "Published",
+  "blog.categories": "Categories",
+  "blog.inCategory": "Posts in",
+  "blog.backToBlog": "Back to blog",
+  "listing.featured": "Featured",
+  "listing.beds": "Beds",
+  "listing.baths": "Baths",
+  "listing.area": "Area",
+  "listing.lotSize": "Lot size",
+  "listing.features": "Features",
+  "listing.viewDetails": "View details",
+  "listing.backToList": "Back to listings",
+  "status.draft": "Draft",
+  "status.for-sale": "For sale",
+  "status.pending": "Pending",
+  "status.sold": "Sold"
+}

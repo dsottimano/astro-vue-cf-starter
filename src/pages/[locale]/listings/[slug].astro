@@ -1,0 +1,211 @@
+---
+import { render } from 'astro:content';
+import { siteConfig, type Locale } from '../../../../config/site.config';
+import { getListings, imageUrl } from '../../../lib/listings';
+import { useTranslations } from '../../../i18n';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const locale of siteConfig.locales) {
+    const listings = await getListings(locale);
+    for (const entry of listings) {
+      paths.push({ params: { locale, slug: entry.data.slug }, props: { entry } });
+    }
+  }
+  return paths;
+}
+
+const { entry } = Astro.props;
+const locale = Astro.params.locale as Locale;
+const t = useTranslations(locale);
+const { Content } = await render(entry);
+const d = entry.data;
+
+const money = new Intl.NumberFormat(locale, {
+  style: 'currency',
+  currency: d.currency,
+  maximumFractionDigits: 0,
+}).format(d.price);
+
+// schema.org structured data for the listing (per content type).
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateListing',
+  name: d.title,
+  url: new URL(`/${locale}/listings/${d.slug}`, siteConfig.url).href,
+  image: d.photos.map((k) => imageUrl(k)),
+  offers: {
+    '@type': 'Offer',
+    price: d.price,
+    priceCurrency: d.currency,
+    availability: d.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+  },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: d.address.street,
+    addressLocality: d.address.city,
+    addressRegion: d.address.region,
+    addressCountry: d.address.country,
+  },
+};
+---
+
+<BaseLayout
+  title={`${d.title} — ${siteConfig.name}`}
+  description={d.title}
+  locale={locale}
+  image={d.photos[0] ? imageUrl(d.photos[0]) : undefined}
+  jsonLd={jsonLd}
+>
+  <main class="wrap">
+    <a class="back" href={`/${locale}/`}>← {t('listing.backToList')}</a>
+
+    <header class="head">
+      <div>
+        <h1>{d.title}</h1>
+        <p class="muted">
+          {d.address.street}, {d.address.city}, {d.address.region}, {d.address.country}
+        </p>
+      </div>
+      <div class="price">{money}</div>
+    </header>
+
+    {
+      d.photos.length > 0 && (
+        <div class="gallery">
+          {d.photos.map((key) => (
+            <img src={imageUrl(key)} alt={d.title} loading="lazy" />
+          ))}
+        </div>
+      )
+    }
+
+    <dl class="facts">
+      <div><dt>{t('status.' + d.status)}</dt></div>
+      {
+        d.beds != null && (
+          <div>
+            <>
+              <dt>{t('listing.beds')}</dt>
+              <dd>{d.beds}</dd>
+            </>
+          </div>
+        )
+      }
+      {
+        d.baths != null && (
+          <div>
+            <>
+              <dt>{t('listing.baths')}</dt>
+              <dd>{d.baths}</dd>
+            </>
+          </div>
+        )
+      }
+      {
+        d.area ? (
+          <div>
+            <>
+              <dt>{t('listing.area')}</dt>
+              <dd>
+                {d.area} {d.areaUnit}
+              </dd>
+            </>
+          </div>
+        ) : null
+      }
+      {
+        d.lotSize ? (
+          <div>
+            <>
+              <dt>{t('listing.lotSize')}</dt>
+              <dd>
+                {d.lotSize} {d.areaUnit}
+              </dd>
+            </>
+          </div>
+        ) : null
+      }
+    </dl>
+
+    <article class="prose">
+      <Content />
+    </article>
+
+    {
+      d.features.length > 0 && (
+        <section>
+          <h2>{t('listing.features')}</h2>
+          <ul>
+            {d.features.map((f) => (
+              <li>{f}</li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 2rem var(--space);
+  }
+  .back {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .head h1 {
+    margin: 0 0 0.25rem;
+  }
+  .muted {
+    color: var(--color-muted);
+  }
+  .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+  }
+  .gallery img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1rem 0;
+    margin: 1.5rem 0;
+  }
+  .facts dt {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .facts dd {
+    margin: 0.2rem 0 0;
+    font-weight: 600;
+  }
+</style>

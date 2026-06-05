@@ -1,0 +1,77 @@
+---
+import type { Locale } from '../../config/site.config';
+import { siteConfig } from '../../config/site.config';
+import SEO from '../components/SEO.astro';
+import ThemeToggle from '../components/ThemeToggle.vue';
+import { useTranslations } from '../i18n';
+import '../styles/theme.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  locale: Locale;
+  image?: string;
+  jsonLd?: Record<string, unknown>;
+}
+
+const { title, description, locale, image, jsonLd } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    <SEO title={title} description={description} image={image} jsonLd={jsonLd} />
+    {/* No-flash: set the theme before first paint. */}
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const dark =
+          stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href={`/${locale}/`}>{siteConfig.name}</a>
+      <nav class="site-nav">
+        <a href={`/${locale}/`}>{t('nav.listings')}</a>
+        <a href={`/${locale}/blog`}>{t('nav.blog')}</a>
+      </nav>
+      <ThemeToggle client:load />
+    </header>
+    <slot />
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 1rem var(--space);
+  }
+  .brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-fg);
+  }
+  .site-nav {
+    margin-right: auto;
+    margin-left: 1.5rem;
+    display: flex;
+    gap: 1rem;
+  }
+  .site-nav a {
+    text-decoration: none;
+    color: var(--color-muted);
+  }
+</style>

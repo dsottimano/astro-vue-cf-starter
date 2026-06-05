@@ -57,6 +57,7 @@ export async function handleStatusCallback(
   if (data.startsWith('set:')) {
     const rest = data.slice('set:'.length);
     const sep = rest.indexOf(':');
+    if (sep === -1) return;
     const status = rest.slice(0, sep);
     const slug = rest.slice(sep + 1);
     const path = pathForSlug(slug);

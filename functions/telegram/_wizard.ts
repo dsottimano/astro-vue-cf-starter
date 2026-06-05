@@ -10,7 +10,7 @@ import {
   locationKeyboard,
   removeKeyboard,
 } from './_telegram';
-import { buildKey, putMedia } from '../api/_media';
+import { buildKey, putMedia, MAX_BYTES } from '../api/_media';
 import { commitFile } from '../api/_github';
 import { resolveSlug, ghExists, buildListingEntry, finalizeListing } from './_listing';
 
@@ -412,6 +412,14 @@ async function addPhoto(
 ): Promise<void> {
   try {
     const bytes = await downloadFile(env, fileId);
+    if (bytes.byteLength > MAX_BYTES) {
+      await sendMessage(
+        env,
+        chatId,
+        `That photo is too large (max ${Math.round(MAX_BYTES / 1024 / 1024)}MB). Send a smaller one.`,
+      );
+      return;
+    }
     const key = buildKey('listings/photos', `${fileId}.jpg`);
     await putMedia(env, bytes, 'image/jpeg', key);
     session.draft.photos = [...(session.draft.photos ?? []), key];

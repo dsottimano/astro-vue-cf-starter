@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { commitFile, readFile, listDir } from './_github';
+import { commitFile, readFile, listDir, toBase64 } from './_github';
 import type { Env } from './_env';
 
 const env = { GITHUB_REPO: 'o/r', GITHUB_BRANCH: 'main', GITHUB_TOKEN: 't' } as Env;
@@ -20,10 +20,15 @@ describe('_github helpers', () => {
   });
 
   it('readFile decodes base64 content', async () => {
-    const body = JSON.stringify({ content: btoa('hello'), sha: 'abc' });
+    const body = JSON.stringify({ content: toBase64('hello'), sha: 'abc' });
     mockFetch(new Response(body, { status: 200 }));
     const r = await readFile(env, 'p.md');
     expect(r).toEqual({ content: 'hello', sha: 'abc' });
+  });
+
+  it('readFile throws on non-ok non-404 status', async () => {
+    mockFetch(new Response('', { status: 500 }));
+    await expect(readFile(env, 'p.md')).rejects.toThrow('github read failed (500)');
   });
 
   it('listDir returns [] on 404 and maps files only', async () => {
@@ -35,6 +40,12 @@ describe('_github helpers', () => {
       { name: 'sub', path: 'd/sub', sha: '2', type: 'dir' },
     ]);
     mockFetch(new Response(dir, { status: 200 }));
+    expect(await listDir(env, 'd')).toEqual([{ name: 'a.md', path: 'd/a.md', sha: '1' }]);
+  });
+
+  it('listDir handles a single-object response', async () => {
+    const single = JSON.stringify({ name: 'a.md', path: 'd/a.md', sha: '1', type: 'file' });
+    mockFetch(new Response(single, { status: 200 }));
     expect(await listDir(env, 'd')).toEqual([{ name: 'a.md', path: 'd/a.md', sha: '1' }]);
   });
 

@@ -30,7 +30,8 @@ function allowed(env: Env, userId: number | undefined): boolean {
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  // Gate 1: webhook secret token.
+  // Gate 1: webhook secret token. Plain !== is fine — string-compare timing is
+  // swamped by edge network jitter, and the token is 256-bit from setWebhook.
   if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.TELEGRAM_WEBHOOK_SECRET) {
     return new Response('Unauthorized', { status: 401 });
   }

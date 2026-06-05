@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { nextStep, stepApplies, parsePositiveNumber } from './_wizard';
+import { nextStep, stepApplies, parsePositiveNumber, esc } from './_wizard';
+
+describe('esc', () => {
+  it('escapes HTML special characters', () => {
+    expect(esc('AT&T <b>x</b>')).toBe('AT&amp;T &lt;b&gt;x&lt;/b&gt;');
+  });
+});
 
 describe('parsePositiveNumber', () => {
   it('parses plain and comma-formatted numbers', () => {

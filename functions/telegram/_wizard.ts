@@ -135,18 +135,27 @@ function numberPad(field: 'beds' | 'baths') {
   ]);
 }
 
+export function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function previewText(draft: Partial<ListingFormModel>): string {
   const m = finalizeListing(draft);
   const lines = [
-    `<b>${m.title}</b>`,
+    `<b>${esc(m.title)}</b>`,
     `${m.propertyType} · ${m.status}`,
     `${m.price} ${m.currency}`,
-    [m.beds && `${m.beds} bd`, m.baths && `${m.baths} ba`, m.area && `${m.area} ${m.areaUnit}`, m.lotSize && `lot ${m.lotSize}`]
+    [
+      m.beds != null && `${m.beds} bd`,
+      m.baths != null && `${m.baths} ba`,
+      m.area != null && `${m.area} ${m.areaUnit}`,
+      m.lotSize != null && `lot ${m.lotSize}`,
+    ]
       .filter(Boolean)
       .join(' · '),
-    `${m.address.street}, ${m.address.city}, ${m.address.region}, ${m.address.country}`,
+    `${esc(m.address.street)}, ${esc(m.address.city)}, ${esc(m.address.region)}, ${esc(m.address.country)}`,
     `coords: ${m.coords.lat}, ${m.coords.lng}`,
-    m.features.length ? `features: ${m.features.join(', ')}` : '',
+    m.features.length ? `features: ${m.features.map(esc).join(', ')}` : '',
     `photos: ${m.photos.length}`,
     '',
     'Create this listing?',

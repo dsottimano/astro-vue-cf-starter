@@ -5,6 +5,9 @@ const cards = [
   { href: '#/categories', title: 'Categories', desc: 'Organize posts into a taxonomy.' },
   { href: '#/redirects', title: 'Redirects', desc: 'Manage URL redirects.' },
 ];
+
+// Editor how-to wiki (lives in the repo, rendered on GitHub). External link.
+const helpUrl = 'https://github.com/dsottimano/astro-vue-cf-starter/tree/main/docs/admin-wiki';
 </script>
 
 <template>
@@ -15,6 +18,10 @@ const cards = [
       <a v-for="c in cards" :key="c.href" :href="c.href" class="card">
         <h2>{{ c.title }}</h2>
         <p>{{ c.desc }}</p>
+      </a>
+      <a :href="helpUrl" class="card help" target="_blank" rel="noopener">
+        <h2>Help &amp; guides ↗</h2>
+        <p>How-to wiki for content editors.</p>
       </a>
     </div>
   </section>

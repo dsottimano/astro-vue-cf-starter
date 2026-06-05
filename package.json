@@ -8,6 +8,7 @@
     "setup": "node cli/setup.mjs",
     "telegram:setup": "node cli/telegram-setup.mjs",
     "dev": "astro dev",
+    "dev:full": "astro build && wrangler pages dev dist",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",

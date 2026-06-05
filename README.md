@@ -45,22 +45,25 @@ npm run dev            # Astro dev server at http://localhost:4321
 
 > ⚠️ `npm run dev` (plain `astro dev`) serves the **public site only**. The admin
 > and bot rely on Cloudflare Pages Functions (`/api/*`, `/telegram/*`), which
-> `astro dev` does **not** run. To exercise the admin/bot locally, build and use
-> Wrangler:
+> `astro dev` does **not** run. To exercise the admin/bot locally, use the
+> combined command (builds, then serves the site **and** the Functions via
+> Wrangler):
 >
 > ```bash
-> npm run build
-> npx wrangler pages dev dist     # serves the site AND the Functions
+> npm run dev:full
 > ```
 >
-> Create a `.dev.vars` (copy `.dev.vars.example`) with `ENVIRONMENT=development`
-> to bypass Cloudflare Access locally.
+> First create a `.dev.vars` (copy `.dev.vars.example`) with
+> `ENVIRONMENT=development` to bypass Cloudflare Access locally. `dev:full` has no
+> hot reload — re-run it to pick up site/content edits; Wrangler reloads the
+> Functions automatically. For fast site-only work with HMR, use `npm run dev`.
 
 ## NPM scripts
 
 | Script                            | What it does                                                   |
 | --------------------------------- | -------------------------------------------------------------- |
-| `npm run dev`                     | Astro dev server (public site only — no Functions)             |
+| `npm run dev`                     | Astro dev server (public site only — no Functions, has HMR)    |
+| `npm run dev:full`                | Build + `wrangler pages dev` — site **and** Functions locally  |
 | `npm run build`                   | Build the static site to `dist/`                               |
 | `npm run preview`                 | Preview the built site                                         |
 | `npm run check`                   | `astro check` (type-check `.astro`/`.ts`)                      |

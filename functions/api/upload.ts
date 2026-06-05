@@ -1,23 +1,9 @@
 /// <reference types="@cloudflare/workers-types" />
 import type { Env } from './_env';
+import { ALLOWED, MAX_BYTES, buildKey, putMedia } from './_media';
 
 // POST multipart/form-data { file, prefix? }
-// Puts a binary to R2 and returns its key. Binaries never enter git;
-// the front end renders them from the R2 public base.
-
-const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'application/pdf']);
-const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
-
-// "photos/2024/<rand>-<name>.jpg" — collision-resistant without Date/Math here.
-function buildKey(prefix: string, filename: string): string {
-  const safe = filename
-    .toLowerCase()
-    .replace(/[^a-z0-9.]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  const rand = crypto.randomUUID().slice(0, 8);
-  const clean = prefix.replace(/[^a-z0-9/_-]/gi, '').replace(/^\/+|\/+$/g, '') || 'uploads';
-  return `${clean}/${rand}-${safe}`;
-}
+// Puts a binary to R2 and returns its key.
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   let form: FormData;
@@ -40,10 +26,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const prefix = (form.get('prefix') as string | null) ?? 'photos';
   const key = buildKey(prefix, file.name);
-
-  await env.MEDIA.put(key, file.stream(), {
-    httpMetadata: { contentType: file.type },
-  });
+  await putMedia(env, file.stream(), file.type, key);
 
   return Response.json({ ok: true, key });
 };

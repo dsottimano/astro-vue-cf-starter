@@ -31,12 +31,10 @@ export async function listForStatus(env: Env, chatId: number): Promise<void> {
     await sendMessage(env, chatId, 'No listings yet.');
     return;
   }
-  const rows = files
-    .slice(0, 20)
-    .map((f) => {
-      const slug = f.name.replace(/\.md$/, '');
-      return [[slug, `pick:${slug}`]] as [string, string][];
-    });
+  const rows = files.slice(0, 20).map((f) => {
+    const slug = f.name.replace(/\.md$/, '');
+    return [[slug, `pick:${slug}`]] as [string, string][];
+  });
   await sendMessage(env, chatId, 'Which listing?', inlineKeyboard(rows));
 }
 

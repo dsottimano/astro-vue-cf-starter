@@ -74,31 +74,68 @@ type Markup = ReturnType<typeof inlineKeyboard> | ReturnType<typeof locationKeyb
 function prompt(step: WizardStep): { text: string; markup?: Markup } {
   switch (step) {
     case 'locale':
-      return { text: '🌐 Language for this listing?', markup: inlineKeyboard([[['English', 'loc:en'], ['Español', 'loc:es']]]) };
+      return {
+        text: '🌐 Language for this listing?',
+        markup: inlineKeyboard([
+          [
+            ['English', 'loc:en'],
+            ['Español', 'loc:es'],
+          ],
+        ]),
+      };
     case 'title':
       return { text: '🏷️ Listing title?' };
     case 'propertyType':
       return {
         text: '🏠 Property type?',
         markup: inlineKeyboard([
-          [['House', 'pt:house'], ['Condo', 'pt:condo']],
-          [['Lot', 'pt:lot'], ['Commercial', 'pt:commercial']],
+          [
+            ['House', 'pt:house'],
+            ['Condo', 'pt:condo'],
+          ],
+          [
+            ['Lot', 'pt:lot'],
+            ['Commercial', 'pt:commercial'],
+          ],
         ]),
       };
     case 'price':
       return { text: '💲 Price? (numbers only, e.g. 875000)' };
     case 'currency':
-      return { text: 'Currency?', markup: inlineKeyboard([[['USD', 'cur:USD'], ['MXN', 'cur:MXN'], ['EUR', 'cur:EUR']]]) };
+      return {
+        text: 'Currency?',
+        markup: inlineKeyboard([
+          [
+            ['USD', 'cur:USD'],
+            ['MXN', 'cur:MXN'],
+            ['EUR', 'cur:EUR'],
+          ],
+        ]),
+      };
     case 'beds':
       return { text: '🛏️ Bedrooms?', markup: numberPad('beds') };
     case 'baths':
       return { text: '🛁 Bathrooms?', markup: numberPad('baths') };
     case 'area':
-      return { text: '📐 Living area? (number, or Skip)', markup: inlineKeyboard([[['Skip', 'skip']]]) };
+      return {
+        text: '📐 Living area? (number, or Skip)',
+        markup: inlineKeyboard([[['Skip', 'skip']]]),
+      };
     case 'areaUnit':
-      return { text: 'Area unit?', markup: inlineKeyboard([[['sqft', 'au:sqft'], ['sqm', 'au:sqm']]]) };
+      return {
+        text: 'Area unit?',
+        markup: inlineKeyboard([
+          [
+            ['sqft', 'au:sqft'],
+            ['sqm', 'au:sqm'],
+          ],
+        ]),
+      };
     case 'lotSize':
-      return { text: '🗺️ Lot size? (number, or Skip)', markup: inlineKeyboard([[['Skip', 'skip']]]) };
+      return {
+        text: '🗺️ Lot size? (number, or Skip)',
+        markup: inlineKeyboard([[['Skip', 'skip']]]),
+      };
     case 'street':
       return { text: '📫 Street address?' };
     case 'city':
@@ -110,28 +147,58 @@ function prompt(step: WizardStep): { text: string; markup?: Markup } {
     case 'coords':
       return { text: '📍 Share the property location, or Skip.', markup: locationKeyboard() };
     case 'features':
-      return { text: '✨ Features? (comma-separated, or Skip)', markup: inlineKeyboard([[['Skip', 'skip']]]) };
+      return {
+        text: '✨ Features? (comma-separated, or Skip)',
+        markup: inlineKeyboard([[['Skip', 'skip']]]),
+      };
     case 'photos':
-      return { text: '📷 Send photos now. Tap Done when finished.', markup: inlineKeyboard([[['Done', 'done']]]) };
+      return {
+        text: '📷 Send photos now. Tap Done when finished.',
+        markup: inlineKeyboard([[['Done', 'done']]]),
+      };
     case 'description':
       return { text: '📝 Description? (or Skip)', markup: inlineKeyboard([[['Skip', 'skip']]]) };
     case 'status':
       return {
         text: 'Status?',
         markup: inlineKeyboard([
-          [['Draft', 'st:draft'], ['For sale', 'st:for-sale']],
-          [['Pending', 'st:pending'], ['Sold', 'st:sold']],
+          [
+            ['Draft', 'st:draft'],
+            ['For sale', 'st:for-sale'],
+          ],
+          [
+            ['Pending', 'st:pending'],
+            ['Sold', 'st:sold'],
+          ],
         ]),
       };
     case 'confirm':
-      return { text: '', markup: inlineKeyboard([[['✅ Confirm', 'confirm'], ['✖️ Cancel', 'cancel']]]) };
+      return {
+        text: '',
+        markup: inlineKeyboard([
+          [
+            ['✅ Confirm', 'confirm'],
+            ['✖️ Cancel', 'cancel'],
+          ],
+        ]),
+      };
   }
 }
 
 function numberPad(field: 'beds' | 'baths') {
   return inlineKeyboard([
-    [['0', `${field}:0`], ['1', `${field}:1`], ['2', `${field}:2`], ['3', `${field}:3`]],
-    [['4', `${field}:4`], ['5', `${field}:5`], ['6', `${field}:6`], ['Skip', 'skip']],
+    [
+      ['0', `${field}:0`],
+      ['1', `${field}:1`],
+      ['2', `${field}:2`],
+      ['3', `${field}:3`],
+    ],
+    [
+      ['4', `${field}:4`],
+      ['5', `${field}:5`],
+      ['6', `${field}:6`],
+      ['Skip', 'skip'],
+    ],
   ]);
 }
 
@@ -294,7 +361,10 @@ export async function handleWizard(
         return advance(env, chatId, session);
       }
       if (txt) {
-        d.features = txt.split(',').map((f) => f.trim()).filter(Boolean);
+        d.features = txt
+          .split(',')
+          .map((f) => f.trim())
+          .filter(Boolean);
         return advance(env, chatId, session);
       }
       break;
@@ -362,7 +432,12 @@ async function commit(env: Env, chatId: number, session: WizardSession): Promise
     const entry = buildListingEntry(session.draft);
     await commitFile(env, entry.path, entry.content, `listing: add ${entry.path}`);
     await clearSession(env, chatId);
-    await sendMessage(env, chatId, `✅ Created <code>${entry.path}</code>. Publishing…`, removeKeyboard);
+    await sendMessage(
+      env,
+      chatId,
+      `✅ Created <code>${entry.path}</code>. Publishing…`,
+      removeKeyboard,
+    );
   } catch {
     await sendMessage(env, chatId, '❌ Commit failed. Tap Confirm to retry, or /cancel.');
   }

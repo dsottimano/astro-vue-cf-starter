@@ -71,9 +71,7 @@ export async function downloadFile(env: Env, fileId: string): Promise<ArrayBuffe
 // ── keyboard builders (pure) ─────────────────────────────────────────────────
 export function inlineKeyboard(rows: Array<Array<[string, string]>>): InlineKeyboard {
   return {
-    inline_keyboard: rows.map((row) =>
-      row.map(([text, data]) => ({ text, callback_data: data })),
-    ),
+    inline_keyboard: rows.map((row) => row.map(([text, data]) => ({ text, callback_data: data }))),
   };
 }
 

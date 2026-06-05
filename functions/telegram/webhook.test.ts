@@ -22,7 +22,9 @@ function post(body: unknown, secret?: string) {
 
 let fetchSpy: ReturnType<typeof vi.fn>;
 beforeEach(() => {
-  fetchSpy = vi.fn(async () => new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 }));
+  fetchSpy = vi.fn(
+    async () => new Response(JSON.stringify({ ok: true, result: {} }), { status: 200 }),
+  );
   vi.stubGlobal('fetch', fetchSpy);
 });
 afterEach(() => vi.restoreAllMocks());
@@ -34,7 +36,10 @@ describe('webhook auth', () => {
   });
 
   it('ignores a sender not on the allowlist but returns 200', async () => {
-    const res = await post({ message: { chat: { id: 999 }, from: { id: 999 }, text: 'hi' } }, 'secret');
+    const res = await post(
+      { message: { chat: { id: 999 }, from: { id: 999 }, text: 'hi' } },
+      'secret',
+    );
     expect(res.status).toBe(200);
   });
 
@@ -60,14 +65,24 @@ describe('webhook routing', () => {
   });
 
   it('silently ignores a non-allowlisted message: no outbound call', async () => {
-    const res = await post({ message: { chat: { id: 999 }, from: { id: 999 }, text: 'hi' } }, 'secret');
+    const res = await post(
+      { message: { chat: { id: 999 }, from: { id: 999 }, text: 'hi' } },
+      'secret',
+    );
     expect(res.status).toBe(200);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('non-allowlisted callback only answers the spinner, nothing more', async () => {
     const res = await post(
-      { callback_query: { id: 'cq1', from: { id: 999 }, message: { chat: { id: 999 } }, data: 'pick:x' } },
+      {
+        callback_query: {
+          id: 'cq1',
+          from: { id: 999 },
+          message: { chat: { id: 999 } },
+          data: 'pick:x',
+        },
+      },
       'secret',
     );
     expect(res.status).toBe(200);
@@ -77,7 +92,10 @@ describe('webhook routing', () => {
   });
 
   it('allowlisted /start replies (one sendMessage)', async () => {
-    const res = await post({ message: { chat: { id: 111 }, from: { id: 111 }, text: '/start' } }, 'secret');
+    const res = await post(
+      { message: { chat: { id: 111 }, from: { id: 111 }, text: '/start' } },
+      'secret',
+    );
     expect(res.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalled();
     expect(String(fetchSpy.mock.calls[0][0])).toContain('sendMessage');

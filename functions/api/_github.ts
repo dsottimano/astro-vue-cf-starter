@@ -98,5 +98,7 @@ export async function listDir(env: Env, dir: string): Promise<DirEntry[]> {
     | Array<{ name: string; path: string; sha: string; type: string }>
     | { name: string; path: string; sha: string; type: string };
   const arr = Array.isArray(data) ? data : [data];
-  return arr.filter((e) => e.type === 'file').map((e) => ({ name: e.name, path: e.path, sha: e.sha }));
+  return arr
+    .filter((e) => e.type === 'file')
+    .map((e) => ({ name: e.name, path: e.path, sha: e.sha }));
 }

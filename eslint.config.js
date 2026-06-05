@@ -30,7 +30,7 @@ export default ts.config(
   // Node CLI scripts: provide the runtime globals they rely on.
   {
     files: ['cli/**/*.mjs'],
-    languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
+    languageOptions: { globals: { console: 'readonly', fetch: 'readonly', process: 'readonly' } },
   },
 
   // Admin view/page components are routed by name — single words are fine.

@@ -6,6 +6,7 @@
   "description": "Content-managed static-site starter: Astro + Vue admin island + Cloudflare Pages.",
   "scripts": {
     "setup": "node cli/setup.mjs",
+    "telegram:setup": "node cli/telegram-setup.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
